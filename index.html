@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+
+	<!--<link rel="stylesheet" type="text/css" href="css/choropleth.css">-->
+	<link rel="stylesheet" type="text/css" href="css/colorbrewer.css">
+
+	<style type="text/css">
+
+	rect.panel {
+		fill: white;
+		stroke-width: 1px;
+		stroke: gray;
+		width: 100%;
+		height: 100%;
+	}
+
+	#eu {
+		stroke-width: 2px;
+		stroke: gray;
+		stroke-dasharray: 5;
+	}
+
+	#map {
+		width: 400px;
+		height: 550px;
+	}
+
+	#bars {
+		width: 280px;
+		height: 550px;
+	}
+
+	</style>
+
+	<script type="text/javascript" src="js/d3.v2.min.js"></script>
+	
+	<script type="text/javascript">
+
+    function drawmap(){
+
+    }
+
+
+	function drawbars(data, eu){	
+		eu = eu || 0;
+		var ext = d3.extent(data);
+		ext[0] = Math.max(ext[0], 0);
+		ext[1] = Math.max(ext[1], 0);
+		
+		var x = d3.scale.linear()
+		  .domain(ext)
+		  .range([0, 280])
+		  ;
+
+		var y = d3.scale.ordinal()
+		  .domain(d3.range(data.length))
+		  .rangeBands([0,550], 0.2)
+		  ;
+
+		var col = d3.scale.linear()
+		  .domain(ext)
+		  .range(["white", "red"])
+		  ;
+
+		console.log(ext);
+
+		var chart = d3.select("#barchart");
+
+		var xZero = x(0);
+		var height = y.rangeBand();
+
+		var bars = chart.selectAll("rect.bar")
+		  .data(data);
+
+		bars.enter().append("rect")
+		  .classed("bar", true)
+		  .attr({ x: xZero
+		  	    , y: function(d,i) {return y(i);}
+		  	    , width: 0
+		  	    , height: height
+		  	    , fill: "white"
+		  	    });
+
+		bars.exit().remove();
+		bars = bars.transition().duration(500);
+
+		bars.attr({ width: function(d) {return x(d);}
+		  	      , fill: function(d) {return col(d);}
+		  	      });
+
+
+		chart.select("#eu").transition()
+		   .attr({ x1: x(eu)
+		   	     , x2: x(eu)
+		         })
+	}
+
+	function init(){
+		drawbars([0,1,2,3,4], 2.5);
+	}
+
+	$(init);
+
+	</script>
+
+	<title>European economic indicators</title>
+</head>
+
+<body>
+	<div>
+		<h3>Economic indicators EU</h3>
+		<select id="topics">
+			<option>Economic growth</option>
+		</select>
+		<label for="topics"></label>
+	</div>
+	<div>
+		<svg id="map">
+		<g><rect class="panel" width="100%" height="100%" x="0" y="0" rx="10" ry="10"/></g>
+		<g id="europe"></g>
+		</svg>
+
+		<svg id="bars">
+		<g><rect class="panel" width="100%" height="100%" x="0" y="0" rx="10" ry="10"/></g>
+		 <g id="barchart">
+		    <line id="eu" x1="0" x2="0" y1="0" y2="100%"/>
+		 </g>
+		</svg>
+</body>
+
+</html>
